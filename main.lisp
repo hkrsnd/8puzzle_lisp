@@ -34,6 +34,7 @@
       pos
       (find-zero-pos (cdr puzzle) (+ pos 1))))
 
+;; move a movable panel toward to selected direction
 (defun move-panel (puzzle direct)
   (let ((zero (find-zero-pos puzzle 0)))
     (cond
@@ -59,15 +60,37 @@
   puzzle))
 
 ;; calculate numbers of panels on different place
-(defun calc-diff-panel-num (puzzle)
-  (defun calc-diff-panel-num-loop (puzzle num-list diff-num)
+(defun calc-diff-num (puzzle)
+  (defun calc-diff-num-loop (puzzle num-list diff-num)
     (if (equal puzzle '())
 	diff-num
 	(if (and (not (equal (car puzzle) (car num-list))) (not (equal (car puzzle) 0)))
-	    (calc-diff-panel-num-loop (cdr puzzle) (cdr num-list) (1+ diff-num))
-	    (calc-diff-panel-num-loop (cdr puzzle) (cdr num-list) diff-num))))
-  (calc-diff-panel-num-loop puzzle '(1 2 3 4 5 6 7 8) 0))
+	    (calc-diff-num-loop (cdr puzzle) (cdr num-list) (1+ diff-num))
+	    (calc-diff-num-loop (cdr puzzle) (cdr num-list) diff-num))))
+  (calc-diff-num-loop puzzle '(1 2 3 4 5 6 7 8) 0))
 
 ;; calculate the sum of manhattan distance
 (defun calc-manhat-dist (puzzle)
-  )
+  (defun calc-manhat-dist-loop (puzzle pos sum)
+    (let ((one-cost-field '(0 1 2 1 2 3 2 3 4))
+	  (two-cost-field '(1 0 1 2 1 2 3 2 3))
+	  (three-cost-field '(2 1 0 3 2 1 4 3 2))
+	  (four-cost-field '(1 2 3 0 1 2 1 2 3))
+	  (five-cost-field '(2 1 2 1 0 1 2 1 2))
+	  (six-cost-field '(3 2 1 2 1 0 3 2 1))
+	  (seven-cost-field '(2 3 4 1 2 3 0 1 2))
+	  (eight-cost-field '(3 2 3 2 1 2 1 0 1)))
+      (if (equal puzzle '())
+	  sum
+	  (cond
+	    ((equal (car puzzle) 0) (calc-manhat-dist-loop (cdr puzzle) (1+ pos) sum))
+	    ((equal (car puzzle) 1) (calc-manhat-dist-loop (cdr puzzle) (1+ pos) (+ sum (nth pos one-cost-field))))
+	    ((equal (car puzzle) 2) (calc-manhat-dist-loop (cdr puzzle) (1+ pos) (+ sum (nth pos two-cost-field))))
+	    ((equal (car puzzle) 3) (calc-manhat-dist-loop (cdr puzzle) (1+ pos) (+ sum (nth pos three-cost-field))))
+	    ((equal (car puzzle) 4) (calc-manhat-dist-loop (cdr puzzle) (1+ pos) (+ sum (nth pos four-cost-field))))
+	    ((equal (car puzzle) 5) (calc-manhat-dist-loop (cdr puzzle) (1+ pos) (+ sum (nth pos five-cost-field))))
+	    ((equal (car puzzle) 6) (calc-manhat-dist-loop (cdr puzzle) (1+ pos) (+ sum (nth pos six-cost-field))))
+	    ((equal (car puzzle) 7) (calc-manhat-dist-loop (cdr puzzle) (1+ pos) (+ sum (nth pos seven-cost-field))))
+	    ((equal (car puzzle) 8) (calc-manhat-dist-loop (cdr puzzle) (1+ pos) (+ sum (nth pos eight-cost-field))))
+	     ))))
+  (calc-manhat-dist-loop puzzle 0 0))
